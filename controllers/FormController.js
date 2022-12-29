@@ -23,7 +23,7 @@ export const createForm = asyncHandler( async (req, res) => {
     })
 })
 
-export const showForm = asyncHandler( async(req, res) => {
+export const showForm = asyncHandler( async (req, res) => {
     // url : domain/form/?id=iuser_id
 
     const id = req.params.id
@@ -50,5 +50,22 @@ export const showForm = asyncHandler( async(req, res) => {
         status: true,
         message: "FORM_FOUND",
         form
+    })
+})
+
+export const showForms = asyncHandler( async (req, res) => {
+    const userId = req.jwt.id
+
+    const forms = await Form.find({ userId })
+
+    if(!forms){
+        res.status(404)
+        throw new Error("FORMS_NOT_FOUND")
+    }
+
+    res.status(200).json({
+        status: true,
+        message: "LIST_FORMS",
+        forms
     })
 })
