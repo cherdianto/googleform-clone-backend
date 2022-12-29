@@ -56,8 +56,13 @@ export const showForm = asyncHandler( async (req, res) => {
 
 export const showForms = asyncHandler( async (req, res) => {
     const userId = req.jwt.id
-
-    const forms = await Form.find({ userId })
+    const page = req.query.page ? req.query.page : 1
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10
+    
+    const forms = await Form.paginate({ userId }, {
+        page,
+        limit
+    })
 
     if(!forms){
         res.status(404)

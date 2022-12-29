@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongoosePaginate from 'mongoose-paginate-v2'
 
 const FormSchema = mongoose.Schema({
     userId: {
@@ -32,5 +33,7 @@ const FormSchema = mongoose.Schema({
 {
     timestamps: {currentTime : () => Math.floor(Date.now() / 1000)}
 })
+
+FormSchema.plugin(mongoosePaginate)
 
 export default mongoose.model('Form', FormSchema)
