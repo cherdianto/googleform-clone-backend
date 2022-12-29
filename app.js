@@ -5,6 +5,7 @@ import morgan from 'morgan'
 import dbConnection from './dbConnection.js'
 import errorHandler from './middlewares/errorMiddleware.js'
 import authRouter from './routes/authRouter.js'
+import formRouter from './routes/formRouter.js'
 
 const env = dotenv.config().parsed
 const app = express()
@@ -20,6 +21,7 @@ app.use(morgan('dev'))
 
 //  ROUTER
 app.use('/auth', authRouter)
+app.use('/form', formRouter)
 
 // ERROR HANDLER
 app.use(errorHandler)
