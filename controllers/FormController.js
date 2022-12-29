@@ -1,4 +1,5 @@
 import Form from "../models/Form.js";
+import User from "../models/User.js";
 import asyncHandler from 'express-async-handler'
 import mongoose from "mongoose";
 
@@ -126,6 +127,51 @@ export const updateForm = asyncHandler( async(req, res) => {
     res.status(200).json({
         status: true,
         message: "FORM_UPDATE_SUCCESS",
+        form
+    })
+})
+
+export const showToUser = asyncHandler( async (req, res) => {
+    // url : domain/form/:formId
+
+    const formId = req.params.formId
+    const userId = req.jwt.id
+
+    if(!formId) {
+        res.status(400)
+        throw new Error("ID_IS_REQUIRED")
+    }
+
+    if(!mongoose.Types.ObjectId.isValid(formId)){
+        res.status(400)
+        throw new Error("INVALID_ID")
+    }
+
+    const form = await Form.findOne({ _id: formId })
+
+    if(!form){
+        res.status(404)
+        throw new Error("FORM_NOT_FOUND")
+    }
+
+    // ARE YOU THE FORM OWNER? IS THE FORM PUBLIC?
+    if(userId != form.userId && form.public === false ){
+        // you are not the form owner and the form is private
+
+        // get the user details
+        const user = await User.findOne({ _id: userId })
+
+        // are you invited?
+        if(!form.invites.includes(user.email)) {
+            form.invites = [] // make sure to hide all invited user if the user is not the owner of the form
+            res.status(400)
+            throw new Error("YOU ARE NOT INVITED")
+        }
+    }
+
+    res.status(200).json({
+        status: true,
+        message: "FORM_FOUND",
         form
     })
 })
