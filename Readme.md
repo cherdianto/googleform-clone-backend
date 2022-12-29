@@ -1,15 +1,20 @@
-a boilerplate for authentication in nodejs
+## A boilerplate for authentication in nodejs
 - register (fullname, email, password)
-> post auth/register
+    - POST /auth/register
 - login (email,password)
-> post auth/login
+    - POST /auth/login
 - logout
-> get auth/logout
+    - GET /auth/logout
 - change-password(email, oldPassword, newPassword)
-> post auth/change-password
+    - POST /auth/change-password
 - refresh-token
-> get auth/refresh-token
+    - GET /auth/refresh-token
 
-dont forget to create your .env file
-> PORT=3000
-> LOCAL_DB=mongodb://localhost/db_name
+### 1. npm install
+### 2. create .env file
+    - PORT=3000
+    - LOCAL_DB=mongodb://localhost/db_name
+    - ACCESS_SECRET_KEY=
+    - REFRESH_SECRET_KEY=
+    - ACCESS_EXPIRY='15m'
+    - REFRESH_EXPIRY='1h'
