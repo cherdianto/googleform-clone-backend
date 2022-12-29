@@ -247,7 +247,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
 
     jwt.verify(userRefreshToken, refreshSecretKey, (error, decoded) => {
         if (error) {
-            res.status(403)
+            res.status(401)
             throw new Error("INVALID_REFRESH_TOKEN")
         }
 

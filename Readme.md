@@ -7,7 +7,7 @@
     - GET /auth/logout
 - change-password(email, oldPassword, newPassword)
     - POST /auth/change-password
-- refresh-token
+- refresh-token (with verifyToken middleware)
     - GET /auth/refresh-token
 
 ### 1. npm install
