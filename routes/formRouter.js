@@ -1,6 +1,6 @@
 import express from 'express'
 import { createForm, showForm, showForms, deleteForm, updateForm } from '../controllers/formController.js'
-import { addQuestion, updateQuestion } from '../controllers/QuestionController.js'
+import { addQuestion, deleteQuestion, updateQuestion } from '../controllers/QuestionController.js'
 import verifyToken from '../middlewares/verifyToken.js'
 
 const router = express.Router()
@@ -14,5 +14,6 @@ router.put('/:formId', verifyToken, updateForm) // update single user form
 // QUESTIONS
 router.post('/:formId/questions', verifyToken, addQuestion)
 router.post('/:formId/questions/:questionId', verifyToken, updateQuestion)
+router.delete('/:formId/questions/:questionId', verifyToken, deleteQuestion)
 
 export default router

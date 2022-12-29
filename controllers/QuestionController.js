@@ -106,3 +106,29 @@ export const updateQuestion = asyncHandler( async(req, res) => {
         question
     })
 })
+
+export const deleteQuestion = asyncHandler( async(req, res) => {
+    const userId = req.jwt.id
+    const formId = req.params.formId
+    const questionId = req.params.questionId
+
+    const question = await Form.findOneAndUpdate(
+        { _id: formId, userId },
+        { $pull : {
+            questions: { id: mongoose.Types.ObjectId(questionId)}
+        }},{
+            new: true
+        }
+    )
+    
+    if(!question) {
+        res.status(500)
+        throw new Error("DELETE_QUESTION_FAILED")
+    }
+
+    res.status(200).json({
+        status: true,
+        message: "DELETE_QUESTION_SUCCESS",
+        question
+    })
+})
