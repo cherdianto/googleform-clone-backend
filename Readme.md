@@ -1,4 +1,6 @@
-## A boilerplate for authentication in nodejs
+# Google Form Clone Backend using Nodejs
+
+## Authentication
 - register (fullname, email, password)
     - POST /auth/register
 - login (email,password)
@@ -9,6 +11,8 @@
     - POST /auth/change-password
 - refresh-token (with verifyToken middleware)
     - GET /auth/refresh-token
+
+## Form
 
 ### 1. npm install
 ### 2. create .env file
