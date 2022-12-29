@@ -132,3 +132,21 @@ export const deleteQuestion = asyncHandler( async(req, res) => {
         question
     })
 })
+
+export const showQuestions = asyncHandler( async(req, res) => {
+    // const userId = req.jwt.id
+    const formId = req.params.formId
+
+    const form = await Form.findOne({ _id: formId }).select('questions')
+
+    if(!form) {
+        res.status(400)
+        throw new Error('FORM_NOT_FOUND')
+    }
+
+    res.status(200).json({
+        status: true,
+        message: "FORM_FOUND",
+        form
+    })
+})
