@@ -1,9 +1,10 @@
 import express from 'express'
-import { createForm } from '../controllers/formController.js'
+import { createForm, showForm } from '../controllers/formController.js'
 import verifyToken from '../middlewares/verifyToken.js'
 
 const router = express.Router()
 
-router.post('/create', verifyToken, createForm)
+router.post('/', verifyToken, createForm)
+router.get('/:id', verifyToken, showForm)
 
 export default router
