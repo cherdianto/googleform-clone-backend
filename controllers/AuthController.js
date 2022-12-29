@@ -2,6 +2,28 @@ import User from "../models/User.js";
 import bcrypt from 'bcrypt'
 import asyncHandler from 'express-async-handler'
 import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
+
+const env = dotenv.config().parsed
+
+const accessSecretKey = env.ACCESS_SECRET_KEY
+const refreshSecretKey = env.REFRESH_SECRET_KEY
+const accessExpiry = env.ACCESS_EXPIRY
+const refreshExpiry = env.REFRESH_EXPIRY
+
+
+const generateAccessToken = (payload) => {
+    return jwt.sign(payload, accessSecretKey, {
+        expiresIn: accessExpiry
+    })
+}
+
+const generateRefreshToken = (payload) => {
+    return jwt.sign(payload, refreshSecretKey, {
+        expiresIn: refreshExpiry
+    })
+}
+
 
 export const register = asyncHandler(async (req, res) => {
     const {
@@ -95,16 +117,9 @@ export const login = asyncHandler(async (req, res) => {
     }
 
     // next, generate tokens (access & refresh)
-    const accessToken = jwt.sign({
-        id: user._id
-    }, 'access_secret_key', {
-        expiresIn: '15m'
-    })
-    const refreshToken = jwt.sign({
-        id: user._id
-    }, 'refresh_secret_key', {
-        expiresIn: '1m'
-    })
+    const accessToken = generateAccessToken({id: user._id})
+
+    const refreshToken = generateRefreshToken({id: user._id})
 
     // store refreshToken to database
     const updateDb = await User.updateOne({
@@ -230,17 +245,13 @@ export const refreshToken = asyncHandler(async (req, res) => {
         throw new Error("USER_NOT_LOGGED_IN")
     }
 
-    jwt.verify(userRefreshToken, 'refresh_secret_key', (error, decoded) => {
+    jwt.verify(userRefreshToken, refreshSecretKey, (error, decoded) => {
         if (error) {
             res.status(403)
             throw new Error("INVALID_REFRESH_TOKEN")
         }
 
-        const accessToken = jwt.sign({
-            id: user._id
-        }, 'access_secret_key', {
-            expiresIn: '15m'
-        })
+        const accessToken = generateAccessToken({ id: user._id})
 
         res.status(200).json({
             status: true,
