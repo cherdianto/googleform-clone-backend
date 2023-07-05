@@ -1,182 +1,193 @@
-import Form from "../models/Form.js";
-import User from "../models/User.js";
-import asyncHandler from 'express-async-handler'
-import mongoose from "mongoose";
+import Form from '../models/Form.js';
+import User from '../models/User.js';
+import asyncHandler from 'express-async-handler';
+import mongoose from 'mongoose';
+import formAccess from '../libraries/formAccess.js';
 
-export const createForm = asyncHandler( async (req, res) => {
-    const form = await Form.create({
-        userId: req.jwt.id,
-        title: 'Untitled Form',
-        description: null,
-        options: [],
-        public: true
-    })
+// create new form with all default parameter
+// why default? because it is autosave, so It has to be something from the very begining
+export const createForm = asyncHandler(async (req, res) => {
+  const form = await Form.create({
+    userId: req.jwt.id,
+    title: 'Untitled Form',
+    description: null,
+    options: [],
+    public: true,
+  });
 
-    if(!form) {
-        res.status(500)
-        throw new Error("CREATE_FORM_FAILED")
+  if (!form) {
+    res.status(500);
+    throw new Error('CREATE_FORM_FAILED');
+  }
+
+  res.status(200).json({
+    status: true,
+    message: 'CREATE_FORM_SUCCESS',
+    form,
+  });
+});
+
+// show single & specific form to user
+export const showForm = asyncHandler(async (req, res) => {
+  // url : domain/form/:formId
+
+  const formId = req.params.formId;
+  const userId = req.jwt.id;
+
+  if (!formId) {
+    res.status(400);
+    throw new Error('ID_IS_REQUIRED');
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(formId)) {
+    res.status(400);
+    throw new Error('INVALID_ID');
+  }
+
+  const form = await Form.findOne({ _id: formId, userId });
+
+  if (!form) {
+    res.status(404);
+    throw new Error('FORM_NOT_FOUND');
+  }
+
+  res.status(200).json({
+    status: true,
+    message: 'FORM_FOUND',
+    form,
+  });
+});
+
+// show all forms owned by user
+export const showForms = asyncHandler(async (req, res) => {
+  const userId = req.jwt.id;
+  const page = req.query.page ? req.query.page : 1;
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+
+  const forms = await Form.paginate(
+    { userId },
+    {
+      page,
+      limit,
     }
+  );
 
-    res.status(200).json({
-        status: true,
-        message: "CREATE_FORM_SUCCESS",
-        form
-    })
-})
+  if (!forms) {
+    res.status(404);
+    throw new Error('FORMS_NOT_FOUND');
+  }
 
-export const showForm = asyncHandler( async (req, res) => {
-    // url : domain/form/:formId
+  res.status(200).json({
+    status: true,
+    message: 'LIST_FORMS',
+    forms,
+  });
+});
 
-    const formId = req.params.formId
-    const userId = req.jwt.id
+// delete specific form
+export const deleteForm = asyncHandler(async (req, res) => {
+  // url : domain/form/:formId
 
-    if(!formId) {
-        res.status(400)
-        throw new Error("ID_IS_REQUIRED")
-    }
+  const formId = req.params.formId;
+  const userId = req.jwt.id;
 
-    if(!mongoose.Types.ObjectId.isValid(formId)){
-        res.status(400)
-        throw new Error("INVALID_ID")
-    }
+  if (!formId) {
+    res.status(400);
+    throw new Error('ID_IS_REQUIRED');
+  }
 
-    const form = await Form.findOne({ _id: formId, userId })
+  if (!mongoose.Types.ObjectId.isValid(formId)) {
+    res.status(400);
+    throw new Error('INVALID_ID');
+  }
 
-    if(!form){
-        res.status(404)
-        throw new Error("FORM_NOT_FOUND")
-    }
+  const form = await Form.findOneAndDelete({ _id: formId, userId });
 
-    res.status(200).json({
-        status: true,
-        message: "FORM_FOUND",
-        form
-    })
-})
+  if (!form) {
+    res.status(404);
+    throw new Error('FORM_DELETE_FAILED');
+  }
 
-export const showForms = asyncHandler( async (req, res) => {
-    const userId = req.jwt.id
-    const page = req.query.page ? req.query.page : 1
-    const limit = req.query.limit ? parseInt(req.query.limit) : 10
-    
-    const forms = await Form.paginate({ userId }, {
-        page,
-        limit
-    })
+  res.status(200).json({
+    status: true,
+    message: 'FORM_DELETE_SUCCESS',
+    form,
+  });
+});
 
-    if(!forms){
-        res.status(404)
-        throw new Error("FORMS_NOT_FOUND")
-    }
+// update specific form
+export const updateForm = asyncHandler(async (req, res) => {
+  // url : domain/form/:formId
 
-    res.status(200).json({
-        status: true,
-        message: "LIST_FORMS",
-        forms
-    })
-})
+  // get all the parameter
+  const formId = req.params.formId;
+  const userId = req.jwt.id;
 
-export const deleteForm = asyncHandler( async(req, res) => {
-    // url : domain/form/:formId
+  // check if formId exist
+  if (!formId) {
+    res.status(400);
+    throw new Error('ID_IS_REQUIRED');
+  }
 
-    const formId = req.params.formId
-    const userId = req.jwt.id
+  // check if formId valid
+  if (!mongoose.Types.ObjectId.isValid(formId)) {
+    res.status(400);
+    throw new Error('INVALID_ID');
+  }
 
-    if(!formId) {
-        res.status(400)
-        throw new Error("ID_IS_REQUIRED")
-    }
+  // check if formId exist and accessed by valid user, then perform update based on req body
+  const form = await Form.findOneAndUpdate({ _id: formId, userId }, req.body, {
+    new: true,
+  });
 
-    if(!mongoose.Types.ObjectId.isValid(formId)){
-        res.status(400)
-        throw new Error("INVALID_ID")
-    }
+  if (!form) {
+    res.status(404);
+    throw new Error('FORM_UPDATE_FAILED');
+  }
 
-    const form = await Form.findOneAndDelete({ _id: formId, userId })
+  res.status(200).json({
+    status: true,
+    message: 'FORM_UPDATE_SUCCESS',
+    form,
+  });
+});
 
-    if(!form){
-        res.status(404)
-        throw new Error("FORM_DELETE_FAILED")
-    }
+export const showToUser = asyncHandler(async (req, res) => {
+  // url : domain/form/:formId
 
-    res.status(200).json({
-        status: true,
-        message: "FORM_DELETE_SUCCESS",
-        form
-    })
-})
+  const formId = req.params.formId;
+  const userId = req.jwt.id;
 
-export const updateForm = asyncHandler( async(req, res) => {
-    // url : domain/form/:formId
+  if (!formId) {
+    res.status(400);
+    throw new Error('ID_IS_REQUIRED');
+  }
 
-    const formId = req.params.formId
-    const userId = req.jwt.id
+  if (!mongoose.Types.ObjectId.isValid(formId)) {
+    res.status(400);
+    throw new Error('INVALID_ID');
+  }
 
-    if(!formId) {
-        res.status(400)
-        throw new Error("ID_IS_REQUIRED")
-    }
+  const form = await Form.findOne({ _id: formId });
 
-    if(!mongoose.Types.ObjectId.isValid(formId)){
-        res.status(400)
-        throw new Error("INVALID_ID")
-    }
+  if (!form) {
+    res.status(404);
+    throw new Error('FORM_NOT_FOUND');
+  }
+  // this will be skipped because any malformed ID will be catched by "invalid_id"
 
-    const form = await Form.findOneAndUpdate({ _id: formId, userId }, req.body, { new: true })
+  const hasFormAccess = await formAccess(formId, userId);
 
-    if(!form){
-        res.status(404)
-        throw new Error("FORM_UPDATE_FAILED")
-    }
+  if (!hasFormAccess) {
+    res.status(400);
+    throw new Error('NO_ACCESS_TO_THE_FORM');
+  }
 
-    res.status(200).json({
-        status: true,
-        message: "FORM_UPDATE_SUCCESS",
-        form
-    })
-})
+  form.invites = []; // make sure to hide all invited user if the user is not the owner of the form
 
-export const showToUser = asyncHandler( async (req, res) => {
-    // url : domain/form/:formId
-
-    const formId = req.params.formId
-    const userId = req.jwt.id
-
-    if(!formId) {
-        res.status(400)
-        throw new Error("ID_IS_REQUIRED")
-    }
-
-    if(!mongoose.Types.ObjectId.isValid(formId)){
-        res.status(400)
-        throw new Error("INVALID_ID")
-    }
-
-    const form = await Form.findOne({ _id: formId })
-
-    if(!form){
-        res.status(404)
-        throw new Error("FORM_NOT_FOUND")
-    }
-
-    // ARE YOU THE FORM OWNER? IS THE FORM PUBLIC?
-    if(userId != form.userId && form.public === false ){
-        // you are not the form owner and the form is private
-
-        // get the user details
-        const user = await User.findOne({ _id: userId })
-
-        // are you invited?
-        if(!form.invites.includes(user.email)) {
-            form.invites = [] // make sure to hide all invited user if the user is not the owner of the form
-            res.status(400)
-            throw new Error("YOU ARE NOT INVITED")
-        }
-    }
-
-    res.status(200).json({
-        status: true,
-        message: "FORM_FOUND",
-        form
-    })
-})
+  res.status(200).json({
+    status: true,
+    message: 'FORM_FOUND',
+    form,
+  });
+});
