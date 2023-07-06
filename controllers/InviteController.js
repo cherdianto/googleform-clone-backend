@@ -127,3 +127,32 @@ export const deleteInvite = asyncHandler(async (req, res) => {
     email: req.body.email,
   });
 });
+
+export const indexInvite = asyncHandler(async (req, res) => {
+  if (!req.params.formId) {
+    res.status(400);
+    throw new Error('ID_IS_REQUIRED');
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(req.params.formId)) {
+    res.status(400);
+    throw new Error('INVALID_ID');
+  }
+
+  //   check if the email exist on the database
+  const form = await Form.findOne({
+    _id: req.params.formId,
+    userId: req.jwt.id,
+  }).select('invites');
+
+  if (!form) {
+    res.status(400);
+    throw new Error('INVITES_NOT_FOUND');
+  }
+
+  return res.status(200).json({
+    status: true,
+    message: 'INVITES_FOUND',
+    invites: form.invites,
+  });
+});

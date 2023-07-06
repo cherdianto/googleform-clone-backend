@@ -19,7 +19,11 @@ import {
   updateQuestion,
 } from '../controllers/QuestionController.js';
 import verifyToken from '../middlewares/verifyToken.js';
-import { addInvite, deleteInvite } from '../controllers/InviteController.js';
+import {
+  addInvite,
+  deleteInvite,
+  indexInvite,
+} from '../controllers/InviteController.js';
 
 const router = express.Router();
 
@@ -53,6 +57,7 @@ router.delete(
 // router.delete('/:formId/questions/:questionId', verifyToken, deleteQuestion)
 
 // INVITES
+router.get('/:formId/invites', verifyToken, indexInvite); // invite email
 router.post('/:formId/invites', verifyToken, addInvite); // invite email
 router.delete('/:formId/invites', verifyToken, deleteInvite); // invite email
 
