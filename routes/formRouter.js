@@ -24,6 +24,7 @@ import {
   deleteInvite,
   indexInvite,
 } from '../controllers/InviteController.js';
+import { allResponses } from '../controllers/ResponseController.js';
 
 const router = express.Router();
 
@@ -60,5 +61,8 @@ router.delete(
 router.get('/:formId/invites', verifyToken, indexInvite); // invite email
 router.post('/:formId/invites', verifyToken, addInvite); // invite email
 router.delete('/:formId/invites', verifyToken, deleteInvite); // invite email
+
+// RESPONSES 
+router.get('/:formId/responses', verifyToken, allResponses); // invite email
 
 export default router;
