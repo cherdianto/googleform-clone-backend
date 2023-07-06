@@ -36,4 +36,11 @@ const FormSchema = mongoose.Schema({
 
 FormSchema.plugin(mongoosePaginate)
 
+// CREATE RELATIONSHIP
+FormSchema.virtual('answers', {
+    ref: "Answer", // model name that want to be connected
+    localField: "_id", // _id in model form
+    foreignField: "formId", // formId in model answer
+})
+
 export default mongoose.model('Form', FormSchema)

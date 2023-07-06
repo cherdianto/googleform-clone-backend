@@ -16,24 +16,24 @@ export const allResponses = asyncHandler(async (req, res) => {
     const isFormExist = await Form.findOne({
       _id: req.params.formId,
       userId: req.jwt.id,
-    });
+    }).populate('answers');
 
     if (!isFormExist) {
       throw { code: 400, message: 'FORM_NOT_FOUND' };
     }
 
     // get all form responses
-    const answers = await Answer.find({ formId: req.params.formId });
-    if (!answers) {
-      throw { code: 400, message: 'ANSWER_NOT_FOUND' };
-    }
+    // const answers = await Answer.find({ formId: req.params.formId });
+    // if (!answers) {
+    //   throw { code: 400, message: 'ANSWER_NOT_FOUND' };
+    // }
 
     return res.status(200).json({
       status: true,
       message: 'ANSWER_FOUND',
       form: isFormExist,
-      total: answers.length,
-      answers,
+      total: isFormExist.answers.length,
+      answers: isFormExist.answers,
     });
   } catch (error) {
     return res.status(error.code || 500).json({
