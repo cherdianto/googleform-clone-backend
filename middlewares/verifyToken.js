@@ -15,9 +15,16 @@ const verifyToken = (req, res, next) => {
 
     jwt.verify(token, env.ACCESS_SECRET_KEY, (error, decoded) => {
         if(error){
-            // errors = invalid signature, jwt malformed, jwt must be provided, invalid token, jwt expired
-            res.status(401)
-            throw new Error("INVALID_TOKEN")
+
+            const errorJwt = ['invalid signature', 'jwt malformed', 'jwt must be provided', 'invalid token']
+
+            if(error.message == 'jwt expired'){
+                res.status(401)
+                throw new Error("TOKEN_EXPIRED")
+            } else if(errorJwt.includes(error.message)){
+                res.status(402)
+                throw new Error("INVALID_TOKEN")
+            }
         }
 
         // decoded = { id: '63acbc2a1979ffaa12742a62', iat: 1672336638, exp: 1672337538 }

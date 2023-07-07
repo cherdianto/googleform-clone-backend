@@ -18,14 +18,6 @@ function ErrorDetail(message, question, Error) {
 }
 
 export const addAnswer = asyncHandler(async (req, res) => {
-  // req.body.answers
-  // answer : {
-  //     {
-  //         questionId: xxx,
-  //         value: sss
-  //     }
-  // }
-
   const formId = req.params.formId;
   const userId = req.jwt.id;
   const answers = req.body.answers;

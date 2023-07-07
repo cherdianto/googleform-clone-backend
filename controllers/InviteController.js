@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Form from '../models/Form.js';
 import User from '../models/User.js';
 import asyncHandler from 'express-async-handler';
+import isEmailValid from '../libraries/isEmailValid.js';
 
 export const addInvite = asyncHandler(async (req, res) => {
   if (!req.params.formId) {
@@ -14,8 +15,7 @@ export const addInvite = asyncHandler(async (req, res) => {
     throw new Error('EMAIL_IS_REQUIRED');
   }
 
-  const regex = /[a-z0-9]+@[a-z]{2,3}/;
-  if (regex.test(req.body.email) === false) {
+  if (!isEmailValid(req.body.email)) {
     res.status(400);
     throw new Error('INVALID_EMAIL');
   }

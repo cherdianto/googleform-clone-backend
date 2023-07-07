@@ -7,6 +7,6 @@ router.post('/register', register)
 router.post('/login', login)
 router.get('/logout', logout)
 router.post('/change-password', changePassword)
-router.get('/refreshToken', verifyToken, refreshToken)
+router.get('/refreshToken', refreshToken)
 
 export default router

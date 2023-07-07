@@ -1,3 +1,5 @@
+import isEmailValid from './isEmailValid.js';
+
 const emailAnswerInvalid = async (form, answers) => {
   const found = form.questions.filter((question) => {
     if (question.type == 'Email') {
@@ -14,11 +16,9 @@ const emailAnswerInvalid = async (form, answers) => {
         }
       }
 
+      // check whether email entered is a valid email
       if (answer) {
-        console.log(answer);
-        const regex = /[a-z0-9]+@[a-z]{2,3}/;
-        if (regex.test(answer.value) === false) {
-          console.log('here');
+        if (!isEmailValid(answer.value)) {
           return true;
         }
       }
