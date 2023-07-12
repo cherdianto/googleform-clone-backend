@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
+import cors from 'cors';
 import dbConnection from './dbConnection.js';
 import errorHandler from './middlewares/errorMiddleware.js';
 import authRouter from './routes/authRouter.js';
@@ -18,6 +19,7 @@ dbConnection();
 // MIDDLEWARES
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors({ origin: env.CLIENT_URL }));
 app.use(cookieParser());
 app.use(morgan('dev'));
 

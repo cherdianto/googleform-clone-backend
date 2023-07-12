@@ -235,21 +235,21 @@ export const changePassword = asyncHandler(async (req, res) => {
 });
 
 export const refreshToken = asyncHandler(async (req, res) => {
-  const userRefreshToken = req.cookies.refreshToken;
+  const userRefreshToken = req.body.refreshToken;
 
   if (!userRefreshToken) {
     res.status(401);
     throw new Error('REFRESH_TOKEN_NOT_FOUND');
   }
 
-  const user = await User.findOne({
-    refreshToken: userRefreshToken,
-  });
+  // const user = await User.findOne({
+  //   refreshToken: userRefreshToken,
+  // });
 
-  if (!user) {
-    res.status(401);
-    throw new Error('USER_NOT_LOGGED_IN');
-  }
+  // if (!user) {
+  //   res.status(401);
+  //   throw new Error('USER_NOT_LOGGED_IN');
+  // }
 
   jwt.verify(userRefreshToken, refreshSecretKey, (error, decoded) => {
     if (error) {
@@ -257,11 +257,13 @@ export const refreshToken = asyncHandler(async (req, res) => {
       throw new Error('INVALID_REFRESH_TOKEN');
     }
 
-    const accessToken = generateAccessToken({ id: user._id });
+    const accessToken = generateAccessToken({ id: decoded._id });
+    const refreshToken = generateRefreshToken({ id: decoded._id });
 
     res.status(200).json({
       status: true,
       accessToken,
+      refreshToken,
     });
   });
 });
