@@ -7,6 +7,7 @@ import formAccess from '../libraries/formAccess.js';
 // create new form with all default parameter
 // why default? because it is autosave, so It has to be something from the very begining
 export const createForm = asyncHandler(async (req, res) => {
+  console.log(req.jwt);
   const form = await Form.create({
     userId: req.jwt.id,
     title: 'Untitled Form',

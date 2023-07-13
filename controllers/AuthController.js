@@ -84,6 +84,7 @@ export const register = asyncHandler(async (req, res) => {
 
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  console.log(email, password);
 
   // check the req.body
   if (!email) {
@@ -101,7 +102,10 @@ export const login = asyncHandler(async (req, res) => {
     email,
   });
 
+  console.log(user);
+
   if (!user) {
+    console.log('email not foud');
     res.status(400);
     throw new Error('EMAIL_NOT_FOUND');
   }
@@ -119,29 +123,30 @@ export const login = asyncHandler(async (req, res) => {
   const refreshToken = generateRefreshToken({ id: user._id });
 
   // store refreshToken to database
-  const updateDb = await User.updateOne(
-    {
-      _id: user._id,
-    },
-    {
-      $set: {
-        refreshToken,
-      },
-    }
-  );
+  // const updateDb = await User.updateOne(
+  //   {
+  //     _id: user._id,
+  //   },
+  //   {
+  //     $set: {
+  //       refreshToken,
+  //     },
+  //   }
+  // );
 
-  if (!updateDb) {
-    res.status(500);
-    throw new Error('ERROR_UPDATE_DB');
-  }
+  // if (!updateDb) {
+  //   console.log('error here');
+  //   res.status(500);
+  //   throw new Error('ERROR_UPDATE_DB');
+  // }
 
-  // if updateDB success, thenset cookies
-  res.cookie('refreshToken', refreshToken, {
-    maxAge: 24 * 60 * 60 * 1000,
-    httpOnly: true,
-  });
-  // return
-  res.status(200).json({
+  // // if updateDB success, thenset cookies
+  // res.cookie('refreshToken', refreshToken, {
+  //   maxAge: 24 * 60 * 60 * 1000,
+  //   httpOnly: true,
+  // });
+
+  return res.status(200).json({
     status: true,
     message: 'LOGIN_SUCCESS',
     fullname: user.fullname,
@@ -237,33 +242,39 @@ export const changePassword = asyncHandler(async (req, res) => {
 export const refreshToken = asyncHandler(async (req, res) => {
   const userRefreshToken = req.body.refreshToken;
 
-  if (!userRefreshToken) {
-    res.status(401);
-    throw new Error('REFRESH_TOKEN_NOT_FOUND');
-  }
-
-  // const user = await User.findOne({
-  //   refreshToken: userRefreshToken,
-  // });
-
-  // if (!user) {
-  //   res.status(401);
-  //   throw new Error('USER_NOT_LOGGED_IN');
-  // }
-
-  jwt.verify(userRefreshToken, refreshSecretKey, (error, decoded) => {
-    if (error) {
-      res.status(401);
-      throw new Error('INVALID_REFRESH_TOKEN');
+  try {
+    if (!userRefreshToken) {
+      throw { code: 400, message: 'REFRESH_TOKEN_REQUIRED' };
     }
 
-    const accessToken = generateAccessToken({ id: decoded._id });
-    const refreshToken = generateRefreshToken({ id: decoded._id });
+    const decoded = jwt.verify(userRefreshToken, refreshSecretKey);
+
+    const accessToken = generateAccessToken({ id: decoded.id });
+    const refreshToken = generateRefreshToken({ id: decoded.id });
 
     res.status(200).json({
       status: true,
+      message: 'REFRESH_TOKEN_SUCCESS',
       accessToken,
       refreshToken,
     });
-  });
+  } catch (error) {
+    const errorJwt = [
+      'invalid signature',
+      'jwt malformed',
+      'jwt must be provided',
+      'invalid token',
+    ];
+    if (error.message == 'jwt expired') {
+      error.code = 401;
+      error.message = 'REFRESH_TOKEN_EXPIRED';
+    } else if (errorJwt.includes(error.message)) {
+      error.message = 'REFRESH_TOKEN_INVALID';
+    }
+
+    return res.status(error.code || 500).json({
+      status: false,
+      message: error.message,
+    });
+  }
 });

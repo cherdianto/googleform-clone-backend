@@ -48,13 +48,11 @@ const verifyToken = (req, res, next) => {
     }
 
     const token = req.headers.authorization.split(' ')[1];
-    console.log(token);
 
     const verify = jwt.verify(token, env.ACCESS_SECRET_KEY);
     req.jwt = verify;
     next();
   } catch (error) {
-    console.log(error.message);
     const errorJwt = [
       'invalid signature',
       'jwt malformed',
@@ -66,11 +64,10 @@ const verifyToken = (req, res, next) => {
       error.code = 401;
       error.message = 'ACCESS_TOKEN_EXPIRED';
     } else if (errorJwt.includes(error.message)) {
-      error.code = 401;
+      // error.code = 401;
       error.message = 'INVALID_ACCESS_TOKEN';
     }
 
-    console.log(error.message)
     return res.status(error.code || 500).json({
       success: false,
       message: error.message,
